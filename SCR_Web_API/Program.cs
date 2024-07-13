@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using SCR_Web_API.Context;
 using SCR_Web_API.Configuration;
+using SCR_Web_API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +42,10 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    //Middleware
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.ConfigureExceptionHandler();
 }
 
 app.UseHttpsRedirection();
