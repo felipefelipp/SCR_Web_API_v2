@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using SCR_Web_API.Context;
 using SCR_Web_API.Configuration;
+using SCR_Web_API.Filters;
+using SCR_Web_API.Logging;
 using SCR_Web_API.Extensions;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 builder.Services.AddApplicationServices();
+builder.Services.AddScoped<ApiLoggingFilter>();
+builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfiguration
+{
+    LogLevel = LogLevel.Information
+}));
 
 var app = builder.Build();
 
