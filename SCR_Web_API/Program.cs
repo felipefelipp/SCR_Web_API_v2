@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using SCR_Web_API.Context;
 using SCR_Web_API.Configuration;
+using SCR_Web_API.Filters;
+using SCR_Web_API.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
