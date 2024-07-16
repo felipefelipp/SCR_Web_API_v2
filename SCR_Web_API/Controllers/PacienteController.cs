@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Models.Cliente;
+using SCR_Web_API.Filters;
 using SCR_Web_API.Repositories.UOW.Interfaces;
 
 namespace SCR_Web_API.Controllers;
@@ -9,14 +11,19 @@ namespace SCR_Web_API.Controllers;
 public class PacienteController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    public PacienteController(IUnitOfWork unitOfWork)
+    private readonly ILogger _logger;
+    public PacienteController(IUnitOfWork unitOfWork, ILogger<PacienteController> logger)
     {
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     [HttpGet]
+    [ServiceFilter(typeof(ApiLoggingFilter))]
     public ActionResult<IEnumerable<Paciente>> ObterPacientes()
     {
+        _logger.LogInformation("-------------------- GET api/Paciente ------------------");
+
         var pacientes = _unitOfWork.PacienteRepository.GetAll();
         if (pacientes == null)
         {
@@ -28,6 +35,9 @@ public class PacienteController : ControllerBase
     [HttpGet("{id:int}", Name = "ObterPaciente")]
     public ActionResult<Paciente> ObterPaciente(int id)
     {
+
+        _logger.LogInformation($"-------------------- GET api/Paciente/id: {id} ------------------");
+
         var paciente = _unitOfWork.PacienteRepository.Get(p => p.PacienteId == id);
 
         if (paciente == null)
