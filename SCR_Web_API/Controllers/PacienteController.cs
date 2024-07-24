@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Models.Cliente;
+using SCR_Web_API.DTO;
 using SCR_Web_API.Filters;
 using SCR_Web_API.Repositories.UOW.Interfaces;
 
@@ -12,28 +13,32 @@ public class PacienteController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger _logger;
-    public PacienteController(IUnitOfWork unitOfWork, ILogger<PacienteController> logger)
+    private readonly IMapper _mapper;
+    public PacienteController(IUnitOfWork unitOfWork, ILogger<PacienteController> logger, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _mapper = mapper;
     }
 
     [HttpGet]
     [ServiceFilter(typeof(ApiLoggingFilter))]
-    public ActionResult<IEnumerable<Paciente>> ObterPacientes()
+    public ActionResult<IEnumerable<PacienteDTO>> ObterPacientes()
     {
         _logger.LogInformation("-------------------- GET api/Paciente ------------------");
 
-        var pacientes = _unitOfWork.PacienteRepository.GetAll();
+        var pacientes = _unitOfWork.PacienteRepository.GetAll().ToList();
+        
         if (pacientes == null)
-        {
             return NotFound($"Pacientes não encontrados");
-        }
-        return Ok(pacientes);
+
+        var pacientesDTO = _mapper.Map<IEnumerable<PacienteDTO>>(pacientes);
+        
+        return Ok(pacientesDTO);
     }
 
     [HttpGet("{id:int}", Name = "ObterPaciente")]
-    public ActionResult<Paciente> ObterPaciente(int id)
+    public ActionResult<PacienteDTO> ObterPaciente(int id)
     {
 
         _logger.LogInformation($"-------------------- GET api/Paciente/id: {id} ------------------");
@@ -42,35 +47,46 @@ public class PacienteController : ControllerBase
 
         if (paciente == null)
             return NotFound($"Paciente com id {id} não encontrado");
-        return Ok(paciente);
+
+        var pacienteDTO = _mapper.Map<PacienteDTO>(paciente);
+
+        return Ok(pacienteDTO);
     }
 
     [HttpPost]
-    public ActionResult CriarPaciente(Paciente paciente)
+    public ActionResult<PacienteDTO> CriarPaciente(PacienteDTO pacienteDto)
     {
-        if (paciente == null)
+        if (pacienteDto == null)
             return BadRequest($"Dados inválidos...");
+
+        var paciente = _mapper.Map<Paciente>(pacienteDto);
 
         var pacienteCriado = _unitOfWork.PacienteRepository.Create(paciente);
         _unitOfWork.Commit();
 
-        return new CreatedAtRouteResult("ObterPaciente", new { id = paciente.PacienteId }, paciente);
+        var pacienteCriadoDto = _mapper.Map<PacienteDTO>(pacienteCriado);
+
+        return new CreatedAtRouteResult("ObterPaciente", new { id = pacienteCriadoDto.PacienteId }, pacienteCriadoDto);
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult AtualizarPaciente(int id, Paciente paciente)
+    public ActionResult<PacienteDTO> AtualizarPaciente(int id, PacienteDTO pacienteDto)
     {
-        if (id != paciente.PacienteId)
+        if (id != pacienteDto.PacienteId)
             return BadRequest($"Id inválido");
+
+        var paciente = _mapper.Map<Paciente>(pacienteDto);
 
         var pacienteAtualizado = _unitOfWork.PacienteRepository.Update(paciente);
         _unitOfWork.Commit();
 
-        return Ok(pacienteAtualizado);
+        var pacienteAtualizadoDto = _mapper.Map<PacienteDTO>(pacienteAtualizado);
+
+        return Ok(pacienteAtualizadoDto);
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult DeletarPaciente(int id)
+    public ActionResult<PacienteDTO> DeletarPaciente(int id)
     {
         var paciente = _unitOfWork.PacienteRepository.Get(p => p.PacienteId == id);
         if (paciente == null)
@@ -79,6 +95,8 @@ public class PacienteController : ControllerBase
         var pacienteDeletado = _unitOfWork.PacienteRepository.Delete(paciente);
         _unitOfWork.Commit();
 
-        return Ok(pacienteDeletado);
+        var pacienteDeletadoDto = _mapper.Map<PacienteDTO>(pacienteDeletado); 
+
+        return Ok(pacienteDeletadoDto);
     }
 }

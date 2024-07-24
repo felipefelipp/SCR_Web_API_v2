@@ -5,6 +5,7 @@ using SCR_Web_API.Configuration;
 using SCR_Web_API.Filters;
 using SCR_Web_API.Logging;
 using SCR_Web_API.Extensions;
+using SCR_Web_API.DTO.DTOMapping;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,9 @@ builder.Services.AddControllers(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(); 
+builder.Services.AddAutoMapper(typeof(DTOMappingProfile));
+
 
 string sqlServerConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 
