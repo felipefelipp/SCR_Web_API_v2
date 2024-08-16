@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Models.Cliente;
+using Newtonsoft.Json;
 using SCR_Web_API.DTO;
 using SCR_Web_API.Filters;
+using SCR_Web_API.Pagination;
 using SCR_Web_API.Repositories.UOW.Interfaces;
 
 namespace SCR_Web_API.Controllers;
@@ -23,12 +25,24 @@ public class PacienteController : ControllerBase
 
     [HttpGet]
     [ServiceFilter(typeof(ApiLoggingFilter))]
-    public ActionResult<IEnumerable<PacienteDTO>> ObterPacientes()
+    public ActionResult<IEnumerable<PacienteDTO>> ObterPacientes([FromQuery] Parameters pacienteParameters)
     {
         _logger.LogInformation("-------------------- GET api/Paciente ------------------");
 
-        var pacientes = _unitOfWork.PacienteRepository.GetAll().ToList();
-        
+        var pacientes = _unitOfWork.PacienteRepository.GetAll(pacienteParameters);
+
+        var metadata = new
+        {
+            pacientes.TotalCount,
+            pacientes.PageSize,
+            pacientes.CurrentPage,
+            pacientes.TotalPages,
+            pacientes.HasNext,
+            pacientes.HasPrevious
+        };
+
+        Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
         if (pacientes == null)
             return NotFound($"Pacientes não encontrados");
 
@@ -56,6 +70,7 @@ public class PacienteController : ControllerBase
     [HttpPost]
     public ActionResult<PacienteDTO> CriarPaciente(PacienteDTO pacienteDto)
     {
+        //TODO: Add funcionalidade para passar o id do paciente APENAS no response da requisição
         if (pacienteDto == null)
             return BadRequest($"Dados inválidos...");
 
