@@ -1,7 +1,10 @@
-﻿namespace SCR_Web_API.DTO;
+﻿using System.Text.Json.Serialization;
+
+namespace SCR_Web_API.DTO;
 
 public class PacienteDTO
 {
+    [JsonIgnore]
     public int PacienteId { get; set; }
     public string Nome { get; set; }
     public DateTime DataNascimento { get; set; }

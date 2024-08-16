@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SCR_Web_API.Context;
+using SCR_Web_API.Pagination;
 using SCR_Web_API.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -18,9 +19,11 @@ public class Repository<T> : IRepository<T> where T : class
         return _context.Set<T>().FirstOrDefault(predicate);
     }
 
-    public IEnumerable<T> GetAll()
+    public PagedList<T> GetAll(Parameters parameters)
     {
-        return _context.Set<T>().AsNoTracking().ToList();
+        var retorno = _context.Set<T>().AsNoTracking().AsQueryable();
+        var retornoOrdenado = PagedList<T>.ToPagedList(retorno, parameters.PageNumber, parameters.PageSize);
+        return retornoOrdenado;
     }
     public T? Create(T entity)
     {
