@@ -22,14 +22,14 @@ namespace SCR_Web_API.Repositories.UOW
             }
         }
 
-        public void Commit()
+        public async Task Commit()
         {
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
         }
 
-        public void Dispose()
+        public async Task Dispose()
         {
-            _appDbContext.Dispose();
+            await _appDbContext.DisposeAsync();
         }
     }
 }

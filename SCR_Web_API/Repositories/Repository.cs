@@ -3,6 +3,8 @@ using SCR_Web_API.Context;
 using SCR_Web_API.Pagination;
 using SCR_Web_API.Repositories.Interfaces;
 using System.Linq.Expressions;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace SCR_Web_API.Repositories;
 
@@ -14,17 +16,19 @@ public class Repository<T> : IRepository<T> where T : class
         _context = dbContext;
     }
 
-    public T? Get(Expression<Func<T, bool>> predicate)
+    public async Task<T?> Get(Expression<Func<T, bool>> predicate)
     {
-        return _context.Set<T>().FirstOrDefault(predicate);
+        return await _context.Set<T>().FirstOrDefaultAsync(predicate);
     }
 
-    public PagedList<T> GetAll(Parameters parameters)
+    public async Task<IPagedList<T>> GetAll(Parameters parameters)
     {
-        var retorno = _context.Set<T>().AsNoTracking().AsQueryable();
-        var retornoOrdenado = PagedList<T>.ToPagedList(retorno, parameters.PageNumber, parameters.PageSize);
+        var retorno = await _context.Set<T>().AsNoTracking().ToListAsync();
+        var retornoQueryable = retorno.AsQueryable();
+        var retornoOrdenado = retornoQueryable.ToPagedList(parameters.PageNumber, parameters.PageSize);
         return retornoOrdenado;
     }
+    // Create, Update e Delete não precisam ser async pois realizam a operação na memória
     public T? Create(T entity)
     {
         _context.Set<T>().Add(entity);
@@ -33,14 +37,14 @@ public class Repository<T> : IRepository<T> where T : class
 
     public T Delete(T entity)
     {
-        _context.Remove(entity);
+        _context.Set<T>().Remove(entity);
         return entity;
     }
 
 
     public T Update(T entity)
     {
-        _context.Update(entity);
+        _context.Set<T>().Update(entity);
         return entity;
     }
 
